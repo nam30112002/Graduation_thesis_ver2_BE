@@ -1,22 +1,21 @@
 package com.example.backend.exception;
 
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.server.ResponseStatusException;
 
 @Getter
-public class CustomException extends RuntimeException{
-    private final HttpStatus status;
-
-    public CustomException(String message, HttpStatus status) {
-        super(message);
-        this.status = status;
+public class CustomException extends ResponseStatusException {
+    private String message;
+    public CustomException(String message, HttpStatusCode statusCode) {
+        super(statusCode);
+        this.message = message;
     }
     public CustomException(String message) {
-        super(message);
-        this.status = HttpStatus.BAD_REQUEST;
+        super(HttpStatusCode.valueOf(400));
+        this.message = message;
     }
-    public CustomException(HttpStatus status) {
-        super("error");
-        this.status = status;
+    public CustomException(HttpStatusCode statusCode) {
+        super(statusCode);
     }
 }

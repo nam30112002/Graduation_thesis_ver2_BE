@@ -9,8 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentDto {
-    private String studentCode;
+public class TeacherDto {
+    private String teacherCode;
     private String name;
     private Boolean isActive;
+    private String keycloakId;
 }
