@@ -26,8 +26,9 @@ public class Course {
     @Column(name = "subject")
     private String subject;
 
-    @Column(name = "teacher_id")
-    private Long teacherId;
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private Teacher teacher;
 
     @Column(name = "created_at")
     private OffsetDateTime createdAt;

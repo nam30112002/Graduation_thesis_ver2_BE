@@ -15,4 +15,8 @@ public class CheckHeathController {
     public String helloAdmin(@AuthenticationPrincipal Jwt jwt) {
         return String.format("Hello 1, %s!", jwt.getClaimAsString("preferred_username"));
     }
+    @GetMapping("/api/user/getCurrentUserName")
+    public String getCurrentUserName(@AuthenticationPrincipal Jwt jwt) {
+        return jwt.getSubject();
+    }
 }

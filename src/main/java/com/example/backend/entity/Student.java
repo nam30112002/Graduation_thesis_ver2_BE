@@ -26,6 +26,9 @@ public class Student {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "keycloak_id")
+    private String keycloakId;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 

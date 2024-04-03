@@ -13,4 +13,5 @@ public interface TeacherService {
     Teacher updateTeacher(Long id, TeacherDto teacherDto);
     void deleteTeacher(Long id);
     Page<Teacher> getAllTeachers(int page, int size);
+    
 }
