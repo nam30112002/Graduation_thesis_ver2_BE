@@ -17,6 +17,7 @@ public class CheckHeathController {
     }
     @GetMapping("/api/user/getCurrentUserName")
     public String getCurrentUserName(@AuthenticationPrincipal Jwt jwt) {
+        jwt.getId();
         return jwt.getSubject();
     }
 }

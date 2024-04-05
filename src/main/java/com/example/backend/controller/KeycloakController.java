@@ -22,4 +22,8 @@ public class KeycloakController {
     public ResponseEntity<SignUpResponseDto> signUpStudent(@RequestBody SignUpDto signUpDto) {
         return ResponseEntity.ok(keycloakService.signUpStudent(signUpDto));
     }
+    @PostMapping("/anonymous/sign-up-teacher")
+    public ResponseEntity<SignUpResponseDto> signUpTeacher(@RequestBody SignUpDto signUpDto) {
+        return ResponseEntity.ok(keycloakService.signUpTeacher(signUpDto));
+    }
 }

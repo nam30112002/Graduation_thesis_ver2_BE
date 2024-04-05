@@ -7,5 +7,5 @@ import org.springframework.stereotype.Service;
 @Service
 public interface KeycloakService {
     SignUpResponseDto signUpStudent(SignUpDto signUpDto);
-    SignUpResponseDto signUpAdmin(SignUpDto signUpDto);
+    SignUpResponseDto signUpTeacher(SignUpDto signUpDto);
 }
