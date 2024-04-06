@@ -140,6 +140,14 @@ public class TeacherServiceImplement implements TeacherService {
         if(course.isEmpty()){
             throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
         }
+        //check if student is registered to the course
+        RegisterId registerId = new RegisterId();
+        registerId.setStudent(student.get());
+        registerId.setCourse(course.get());
+        Optional<Register> registerOptional = registerRepository.findById(registerId);
+        if(registerOptional.isEmpty()){
+            throw new CustomException("Student is not registered to this course", HttpStatus.BAD_REQUEST);
+        }
         AttendanceLog attendanceLog = new AttendanceLog();
         attendanceLog.setStudent(student.get());
         attendanceLog.setCourse(course.get());
