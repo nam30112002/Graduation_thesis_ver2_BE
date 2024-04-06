@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 
@@ -22,6 +23,7 @@ public class Register {
     private RegisterId id;
 
     @Column(name = "register_time")
+    @CreationTimestamp
     private OffsetDateTime registerTime;
 
     @Column(name = "note")

@@ -2,10 +2,11 @@ package com.example.backend.service.implement;
 
 import com.example.backend.dto.CourseDto;
 import com.example.backend.dto.TeacherDto;
-import com.example.backend.entity.Course;
-import com.example.backend.entity.Teacher;
+import com.example.backend.entity.*;
 import com.example.backend.exception.CustomException;
 import com.example.backend.repository.CourseRepository;
+import com.example.backend.repository.RegisterRepository;
+import com.example.backend.repository.StudentRepository;
 import com.example.backend.repository.TeacherRepository;
 import com.example.backend.service.TeacherService;
 import org.springframework.data.domain.Page;
@@ -20,9 +21,13 @@ import java.util.Optional;
 public class TeacherServiceImplement implements TeacherService {
     private final TeacherRepository teacherRepository;
     private final CourseRepository courseRepository;
-    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository) {
+    private final StudentRepository studentRepository;
+    private final RegisterRepository registerRepository;
+    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository, StudentRepository studentRepository, RegisterRepository registerRepository) {
         this.teacherRepository = teacherRepository;
         this.courseRepository = courseRepository;
+        this.studentRepository = studentRepository;
+        this.registerRepository = registerRepository;
     }
     @Override
     public Teacher createTeacher(TeacherDto teacherDto) {
@@ -98,5 +103,30 @@ public class TeacherServiceImplement implements TeacherService {
         course.setUpdatedAt(OffsetDateTime.now());
         course.setIsActive(true);
         courseRepository.save(course);
+    }
+
+    @Override
+    public void addStudentToCourse(Long courseId, Long studentId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        Optional<Student> student = studentRepository.findById(studentId);
+        if(student.isEmpty()){
+            throw new CustomException("Student not found", HttpStatus.NOT_FOUND);
+        }
+        RegisterId registerId = new RegisterId();
+        registerId.setStudent(student.get());
+        registerId.setCourse(course.get());
+        Optional<Register> registerOptional = registerRepository.findById(registerId);
+        if(registerOptional.isPresent()){
+            throw new CustomException("Student already registered to this course", HttpStatus.BAD_REQUEST);
+        }
+        // Add student to course
+        Register register = new Register();
+        register.setId(registerId);
+        register.setNumberOfAbsence(0);
+        register.setNumberOfAttendance(0);
+        registerRepository.save(register);
     }
 }

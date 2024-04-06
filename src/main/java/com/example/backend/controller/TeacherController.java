@@ -1,11 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.CourseDto;
-import com.example.backend.dto.TeacherDto;
-import com.example.backend.entity.Teacher;
 import com.example.backend.service.TeacherService;
-import org.keycloak.KeycloakSecurityContext;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -16,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 public class TeacherController {
     private final TeacherService teacherService;
 
-    private KeycloakSecurityContext securityContext;
     public TeacherController(TeacherService teacherService) {
         this.teacherService = teacherService;
     }
@@ -27,5 +22,9 @@ public class TeacherController {
         return ResponseEntity.ok("Course created successfully");
     }
 
-
+    @PostMapping("/add-student-to-course")
+    public ResponseEntity<?> addStudentToCourse(@RequestParam Long courseId, @RequestParam Long studentId){
+        teacherService.addStudentToCourse(courseId, studentId);
+        return ResponseEntity.ok("Student added to course successfully");
+    }
 }

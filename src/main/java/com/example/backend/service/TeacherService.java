@@ -16,4 +16,5 @@ public interface TeacherService {
     void deleteTeacher(Long id);
     Page<Teacher> getAllTeachers(int page, int size);
     void createCourse(CourseDto courseDto, String teacherKeycloakId);
+    void addStudentToCourse(Long courseId, Long studentId);
 }
