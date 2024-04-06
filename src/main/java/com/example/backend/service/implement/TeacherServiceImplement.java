@@ -1,13 +1,11 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.dto.AttendanceLogDto;
 import com.example.backend.dto.CourseDto;
 import com.example.backend.dto.TeacherDto;
 import com.example.backend.entity.*;
 import com.example.backend.exception.CustomException;
-import com.example.backend.repository.CourseRepository;
-import com.example.backend.repository.RegisterRepository;
-import com.example.backend.repository.StudentRepository;
-import com.example.backend.repository.TeacherRepository;
+import com.example.backend.repository.*;
 import com.example.backend.service.TeacherService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,11 +21,13 @@ public class TeacherServiceImplement implements TeacherService {
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
     private final RegisterRepository registerRepository;
-    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository, StudentRepository studentRepository, RegisterRepository registerRepository) {
+    private final AttendanceLogRepository attendanceLogRepository;
+    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository, StudentRepository studentRepository, RegisterRepository registerRepository, AttendanceLogRepository attendanceLogRepository) {
         this.teacherRepository = teacherRepository;
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
         this.registerRepository = registerRepository;
+        this.attendanceLogRepository = attendanceLogRepository;
     }
     @Override
     public Teacher createTeacher(TeacherDto teacherDto) {
@@ -128,5 +128,23 @@ public class TeacherServiceImplement implements TeacherService {
         register.setNumberOfAbsence(0);
         register.setNumberOfAttendance(0);
         registerRepository.save(register);
+    }
+
+    @Override
+    public void addAttendance(AttendanceLogDto attendanceLogDto) {
+        Optional<Student> student = studentRepository.findById(attendanceLogDto.getStudentId());
+        if(student.isEmpty()){
+            throw new CustomException("Student not found", HttpStatus.NOT_FOUND);
+        }
+        Optional<Course> course = courseRepository.findById(attendanceLogDto.getCourseId());
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        AttendanceLog attendanceLog = new AttendanceLog();
+        attendanceLog.setStudent(student.get());
+        attendanceLog.setCourse(course.get());
+        attendanceLog.setAttendanceTime(attendanceLogDto.getAttendanceTime());
+        attendanceLog.setIsAttendance(attendanceLogDto.getIsAttendance());
+        attendanceLogRepository.save(attendanceLog);
     }
 }
