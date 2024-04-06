@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.AttendanceLogDto;
 import com.example.backend.dto.CourseDto;
 import com.example.backend.service.TeacherService;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,10 @@ public class TeacherController {
     public ResponseEntity<?> addStudentToCourse(@RequestParam Long courseId, @RequestParam Long studentId){
         teacherService.addStudentToCourse(courseId, studentId);
         return ResponseEntity.ok("Student added to course successfully");
+    }
+    @PostMapping("/add-attendance")
+    public ResponseEntity<?> addAttendance(@RequestBody AttendanceLogDto attendanceLogDto){
+        teacherService.addAttendance(attendanceLogDto);
+        return ResponseEntity.ok("Attendance added successfully");
     }
 }
