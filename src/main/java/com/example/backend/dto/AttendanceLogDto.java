@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 public class AttendanceLogDto{
     Long courseId;
     Long studentId;
+    //example: 2024-04-06T10:25:00+07:00
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     OffsetDateTime attendanceTime;
     Boolean isAttendance;
