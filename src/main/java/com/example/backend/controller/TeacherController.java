@@ -20,19 +20,28 @@ public class TeacherController {
     }
     @PostMapping("/create-course")
     public ResponseEntity<?> createCourse(@RequestBody CourseDto courseDto, @AuthenticationPrincipal Jwt jwt){
-        System.out.println("id: " + jwt.getClaimAsString("sub"));
+        System.out.println("id: " + jwt.getClaimAsString("sub")); //sub is the keycloak id
         teacherService.createCourse(courseDto, jwt.getClaimAsString("sub"));
         return ResponseEntity.ok("Course created successfully");
     }
 
     @PostMapping("/add-student-to-course")
-    public ResponseEntity<?> addStudentToCourse(@RequestParam Long courseId, @RequestParam Long studentId){
-        teacherService.addStudentToCourse(courseId, studentId);
+    public ResponseEntity<?> addStudentToCourse(@AuthenticationPrincipal Jwt jwt, @RequestParam Long courseId, @RequestParam Long studentId){
+        teacherService.addStudentToCourse(courseId, studentId, jwt.getClaimAsString("sub"));
         return ResponseEntity.ok("Student added to course successfully");
     }
     @PostMapping("/add-attendance")
     public ResponseEntity<?> addAttendance(@RequestBody AttendanceLogDto attendanceLogDto){
         teacherService.addAttendance(attendanceLogDto);
         return ResponseEntity.ok("Attendance added successfully");
+    }
+    @GetMapping("/get-my-courses")
+    public ResponseEntity<?> getMyCourses(@AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(teacherService.getMyCourses(jwt.getClaimAsString("sub")));
+    }
+    @DeleteMapping("/delete-student-from-course")
+    public ResponseEntity<?> deleteStudentFromCourse(@RequestParam Long courseId, @RequestParam Long studentId, @AuthenticationPrincipal Jwt jwt){
+        teacherService.deleteStudentFromCourse(courseId, studentId, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Student deleted from course successfully");
     }
 }

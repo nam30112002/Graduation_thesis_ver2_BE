@@ -31,6 +31,9 @@ public class AttendanceLog {
     @Column(name = "attendance_time")
     private OffsetDateTime attendanceTime;
 
+    @Column(name = "lecture_number")
+    private Integer lectureNumber;
+
     @Column(name = "is_attendance")
     private Boolean isAttendance;
 }

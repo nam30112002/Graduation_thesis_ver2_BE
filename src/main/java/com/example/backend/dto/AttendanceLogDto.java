@@ -17,4 +17,5 @@ public class AttendanceLogDto{
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     OffsetDateTime attendanceTime;
     Boolean isAttendance;
+    Integer lectureNumber;
 }

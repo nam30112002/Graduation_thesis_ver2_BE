@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -106,7 +108,7 @@ public class TeacherServiceImplement implements TeacherService {
     }
 
     @Override
-    public void addStudentToCourse(Long courseId, Long studentId) {
+    public void addStudentToCourse(Long courseId, Long studentId, String teacherKeycloakId) {
         Optional<Course> course = courseRepository.findById(courseId);
         if(course.isEmpty()){
             throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
@@ -122,6 +124,15 @@ public class TeacherServiceImplement implements TeacherService {
         if(registerOptional.isPresent()){
             throw new CustomException("Student already registered to this course", HttpStatus.BAD_REQUEST);
         }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+
         // Add student to course
         Register register = new Register();
         register.setId(registerId);
@@ -154,5 +165,55 @@ public class TeacherServiceImplement implements TeacherService {
         attendanceLog.setAttendanceTime(attendanceLogDto.getAttendanceTime());
         attendanceLog.setIsAttendance(attendanceLogDto.getIsAttendance());
         attendanceLogRepository.save(attendanceLog);
+    }
+
+    @Override
+    public List<Course> getMyCourses(String teacherKeycloakId) {
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        List<Course> courses = courseRepository.findByTeacher(teacher.get());
+        List<Course> response = new ArrayList<>();
+        for (Course course: courses){
+            Course courseWithoutTeacher = new Course();
+            courseWithoutTeacher.setId(course.getId());
+            courseWithoutTeacher.setCourseCode(course.getCourseCode());
+            courseWithoutTeacher.setSubject(course.getSubject());
+            courseWithoutTeacher.setCreatedAt(course.getCreatedAt());
+            courseWithoutTeacher.setUpdatedAt(course.getUpdatedAt());
+            courseWithoutTeacher.setIsActive(course.getIsActive());
+            response.add(courseWithoutTeacher);
+        }
+        return response;
+    }
+
+    @Override
+    public void deleteStudentFromCourse(Long courseId, Long studentId, String teacherKeycloakId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        Optional<Student> student = studentRepository.findById(studentId);
+        if(student.isEmpty()){
+            throw new CustomException("Student not found", HttpStatus.NOT_FOUND);
+        }
+        //check if student is registered to the course
+        RegisterId registerId = new RegisterId();
+        registerId.setStudent(student.get());
+        registerId.setCourse(course.get());
+        Optional<Register> registerOptional = registerRepository.findById(registerId);
+        if(registerOptional.isEmpty()){
+            throw new CustomException("Student is not registered to this course", HttpStatus.BAD_REQUEST);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        registerRepository.deleteById(registerId);
     }
 }

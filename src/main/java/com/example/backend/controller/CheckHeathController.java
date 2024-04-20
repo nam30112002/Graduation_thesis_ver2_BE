@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,5 +20,10 @@ public class CheckHeathController {
     public String getCurrentUserName(@AuthenticationPrincipal Jwt jwt) {
         jwt.getId();
         return jwt.getSubject();
+    }
+    @PermitAll
+    @GetMapping("/api/public/1")
+    public String testPublic() {
+        return "This is a public endpoint";
     }
 }
