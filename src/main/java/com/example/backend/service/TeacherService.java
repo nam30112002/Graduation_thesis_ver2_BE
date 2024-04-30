@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.AttendanceLogDto;
 import com.example.backend.dto.CourseDto;
+import com.example.backend.dto.QuestionDto;
 import com.example.backend.dto.TeacherDto;
 import com.example.backend.entity.Course;
 import com.example.backend.entity.Teacher;
@@ -24,4 +25,18 @@ public interface TeacherService {
     List<Course> getMyCourses(String teacherKeycloakId);
 
     void deleteStudentFromCourse(Long courseId, Long studentId, String teacherKeycloakId);
+
+    void deleteAttendance(Long attendanceId, String teacherKeycloakId);
+
+    void createQuestion(Long courseId, QuestionDto questionDto, String teacherKeycloakId);
+
+    void deleteQuestion(Long questionId, String teacherKeycloakId);
+
+    void deleteAnswer(Long answerId, String teacherKeycloakId);
+
+    void updateAnswer(Long answerId, String content, String teacherKeycloakId);
+
+    List<?> getAllQuestionOfCourse(Long courseId);
+
+    List<?> getAllAnswerOfQuestion(Long questionId);
 }

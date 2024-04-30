@@ -2,13 +2,14 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.AttendanceLogDto;
 import com.example.backend.dto.CourseDto;
+import com.example.backend.dto.QuestionDto;
 import com.example.backend.service.TeacherService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.OffsetDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/teacher")
@@ -43,5 +44,38 @@ public class TeacherController {
     public ResponseEntity<?> deleteStudentFromCourse(@RequestParam Long courseId, @RequestParam Long studentId, @AuthenticationPrincipal Jwt jwt){
         teacherService.deleteStudentFromCourse(courseId, studentId, jwt.getClaimAsString("sub"));
         return ResponseEntity.ok("Student deleted from course successfully");
+    }
+    @DeleteMapping("/delete-attendance")
+    public ResponseEntity<?> deleteAttendance(@RequestParam Long attendanceId, @AuthenticationPrincipal Jwt jwt){
+        teacherService.deleteAttendance(attendanceId, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Attendance deleted successfully");
+    }
+    @PostMapping("/create-question")
+    public ResponseEntity<?> createQuestion(@RequestParam Long courseId, @RequestParam QuestionDto questionDto, @AuthenticationPrincipal Jwt jwt){
+        teacherService.createQuestion(courseId, questionDto, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Question created successfully");
+    }
+    @DeleteMapping("/delete-question")
+    public ResponseEntity<?> deleteQuestion(@RequestParam Long questionId, @AuthenticationPrincipal Jwt jwt){
+        teacherService.deleteQuestion(questionId, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Question deleted successfully");
+    }
+    @DeleteMapping("/delete-answer")
+    public ResponseEntity<?> deleteAnswer(@RequestParam Long answerId, @AuthenticationPrincipal Jwt jwt){
+        teacherService.deleteAnswer(answerId, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Answer deleted successfully");
+    }
+    @PutMapping("/update-answer")
+    public ResponseEntity<?> updateAnswer(@RequestParam Long answerId, @RequestParam String content, @AuthenticationPrincipal Jwt jwt){
+        teacherService.updateAnswer(answerId, content, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Answer updated successfully");
+    }
+    @GetMapping("/get-all-question-of-course")
+    public ResponseEntity<List<?>> getAllQuestionOfCourse(@RequestParam Long courseId){
+        return ResponseEntity.ok(teacherService.getAllQuestionOfCourse(courseId));
+    }
+    @GetMapping("/get-all-answer-of-question")
+    public ResponseEntity<List<?>> getAllAnswerOfQuestion(@RequestParam Long questionId){
+        return ResponseEntity.ok(teacherService.getAllAnswerOfQuestion(questionId));
     }
 }

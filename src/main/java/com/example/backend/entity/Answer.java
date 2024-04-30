@@ -1,41 +1,45 @@
-package com.example.backend;
+package com.example.backend.entity;
 
-import com.example.backend.entity.Course;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "question")
-@AllArgsConstructor
+@Table(name = "answer")
 @NoArgsConstructor
-public class Question {
+@AllArgsConstructor
+public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
+    @JoinColumn(name = "question_id", nullable = false)
+    private Question question;
 
-    @NotNull
-    @Column(name = "content", nullable = false, length = Integer.MAX_VALUE)
+    @Column(name = "is_image")
+    private Boolean isImage;
+
+    @Column(name = "content")
     private String content;
 
-    @ColumnDefault("now()")
+    @Column(name = "is_true")
+    private Boolean isTrue;
+
+    @CreationTimestamp
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
-    @ColumnDefault("now()")
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 

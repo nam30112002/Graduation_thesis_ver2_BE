@@ -2,6 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.dto.AttendanceLogDto;
 import com.example.backend.dto.CourseDto;
+import com.example.backend.dto.QuestionDto;
 import com.example.backend.dto.TeacherDto;
 import com.example.backend.entity.*;
 import com.example.backend.exception.CustomException;
@@ -24,12 +25,16 @@ public class TeacherServiceImplement implements TeacherService {
     private final StudentRepository studentRepository;
     private final RegisterRepository registerRepository;
     private final AttendanceLogRepository attendanceLogRepository;
-    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository, StudentRepository studentRepository, RegisterRepository registerRepository, AttendanceLogRepository attendanceLogRepository) {
+    private final QuestionRepository questionRepository;
+    private final AnswerRepository answerRepository;
+    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository, StudentRepository studentRepository, RegisterRepository registerRepository, AttendanceLogRepository attendanceLogRepository, QuestionRepository questionRepository, AnswerRepository answerRepository) {
         this.teacherRepository = teacherRepository;
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
         this.registerRepository = registerRepository;
         this.attendanceLogRepository = attendanceLogRepository;
+        this.questionRepository = questionRepository;
+        this.answerRepository = answerRepository;
     }
     @Override
     public Teacher createTeacher(TeacherDto teacherDto) {
@@ -215,5 +220,171 @@ public class TeacherServiceImplement implements TeacherService {
             throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
         }
         registerRepository.deleteById(registerId);
+    }
+
+    @Override
+    public void deleteAttendance(Long attendanceId, String teacherKeycloakId) {
+        Optional<AttendanceLog> attendanceLog = attendanceLogRepository.findById(attendanceId);
+        if(attendanceLog.isEmpty()){
+            throw new CustomException("Attendance not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!attendanceLog.get().getCourse().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        attendanceLogRepository.deleteById(attendanceId);
+    }
+
+    @Override
+    public void createQuestion(Long courseId, QuestionDto questionDto, String teacherKeycloakId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        Question question = new Question();
+        question.setCourse(course.get());
+        question.setContent(questionDto.getQuestion());
+        questionRepository.save(question);
+        for(String correctAnswer: questionDto.getCorrectAnswers()){
+            Answer answer = new Answer();
+            answer.setQuestion(question);
+            answer.setIsTrue(true);
+            //if answer starts with "@image " then it is image answer
+            if(correctAnswer.startsWith("@image ")){
+                answer.setContent(correctAnswer.substring(7));
+                answer.setIsImage(true);
+            }else{
+                answer.setContent(correctAnswer);
+                answer.setIsImage(false);
+            }
+            answerRepository.save(answer);
+        }
+        for(String wrongAnswer: questionDto.getWrongAnswers()){
+            Answer answer = new Answer();
+            answer.setQuestion(question);
+            answer.setIsTrue(false);
+            //if answer starts with "@image " then it is image answer
+            if(wrongAnswer.startsWith("@image ")){
+                answer.setContent(wrongAnswer.substring(7));
+                answer.setIsImage(true);
+            }else{
+                answer.setContent(wrongAnswer);
+                answer.setIsImage(false);
+            }
+            answerRepository.save(answer);
+        }
+    }
+
+    @Override
+    public void deleteQuestion(Long questionId, String teacherKeycloakId) {
+        Optional<Question> question = questionRepository.findById(questionId);
+        if(question.isEmpty()){
+            throw new CustomException("Question not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!question.get().getCourse().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        questionRepository.deleteById(questionId);
+        List<Answer> answers = answerRepository.findByQuestion(question.get());
+        for(Answer answer: answers){
+            answerRepository.deleteById(answer.getId());
+        }
+    }
+
+    @Override
+    public void deleteAnswer(Long answerId, String teacherKeycloakId) {
+        Optional<Answer> answer = answerRepository.findById(answerId);
+        if(answer.isEmpty()){
+            throw new CustomException("Answer not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!answer.get().getQuestion().getCourse().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        answerRepository.deleteById(answerId);
+    }
+
+    @Override
+    public void updateAnswer(Long answerId, String content, String teacherKeycloakId) {
+        Optional<Answer> answer = answerRepository.findById(answerId);
+        if(answer.isEmpty()){
+            throw new CustomException("Answer not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!answer.get().getQuestion().getCourse().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        if(content.startsWith("@image ")){
+            answer.get().setIsImage(true);
+            answer.get().setContent(content.substring(7));
+        }else{
+            answer.get().setIsImage(false);
+            answer.get().setContent(content);
+        }
+    }
+
+    @Override
+    public List<?> getAllQuestionOfCourse(Long courseId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        List<Question> questions = questionRepository.findByCourse(course.get());
+        List<Question> response = new ArrayList<>();
+        for(Question question: questions){
+            Question questionWithoutCourse = new Question();
+            questionWithoutCourse.setId(question.getId());
+            questionWithoutCourse.setContent(question.getContent());
+            questionWithoutCourse.setCreatedAt(question.getCreatedAt());
+            questionWithoutCourse.setUpdatedAt(question.getUpdatedAt());
+            response.add(questionWithoutCourse);
+        }
+        return response;
+    }
+
+    @Override
+    public List<?> getAllAnswerOfQuestion(Long questionId) {
+        Optional<Question> question = questionRepository.findById(questionId);
+        if(question.isEmpty()){
+            throw new CustomException("Question not found", HttpStatus.NOT_FOUND);
+        }
+        List<Answer> answers = answerRepository.findByQuestion(question.get());
+        List<Answer> response = new ArrayList<>();
+        for(Answer answer: answers){
+            Answer answerWithoutQuestion = new Answer();
+            answerWithoutQuestion.setId(answer.getId());
+            answerWithoutQuestion.setContent(answer.getContent());
+            answerWithoutQuestion.setIsImage(answer.getIsImage());
+            answerWithoutQuestion.setIsTrue(answer.getIsTrue());
+            answerWithoutQuestion.setCreatedAt(answer.getCreatedAt());
+            answerWithoutQuestion.setUpdatedAt(answer.getUpdatedAt());
+            response.add(answerWithoutQuestion);
+        }
+        return response;
     }
 }
