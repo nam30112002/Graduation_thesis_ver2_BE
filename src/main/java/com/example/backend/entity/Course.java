@@ -26,6 +26,9 @@ public class Course {
     @Column(name = "subject")
     private String subject;
 
+    @Column(name = "description")
+    private String description;
+
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;

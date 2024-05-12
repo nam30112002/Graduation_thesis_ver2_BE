@@ -51,7 +51,7 @@ public class TeacherController {
         return ResponseEntity.ok("Attendance deleted successfully");
     }
     @PostMapping("/create-question")
-    public ResponseEntity<?> createQuestion(@RequestParam Long courseId, @RequestParam QuestionDto questionDto, @AuthenticationPrincipal Jwt jwt){
+    public ResponseEntity<?> createQuestion(@RequestParam Long courseId, @RequestBody QuestionDto questionDto, @AuthenticationPrincipal Jwt jwt){
         teacherService.createQuestion(courseId, questionDto, jwt.getClaimAsString("sub"));
         return ResponseEntity.ok("Question created successfully");
     }
@@ -77,5 +77,18 @@ public class TeacherController {
     @GetMapping("/get-all-answer-of-question")
     public ResponseEntity<List<?>> getAllAnswerOfQuestion(@RequestParam Long questionId){
         return ResponseEntity.ok(teacherService.getAllAnswerOfQuestion(questionId));
+    }
+    @PutMapping("/update-question")
+    public ResponseEntity<?> updateQuestion(@RequestParam Long questionId, @RequestParam String content, @AuthenticationPrincipal Jwt jwt){
+        teacherService.updateQuestion(questionId, content, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Question updated successfully");
+    }
+    @GetMapping("/get-all-student-of-course")
+    public ResponseEntity<List<?>> getAllStudentOfCourse(@RequestParam Long courseId, @AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(teacherService.getAllStudentOfCourse(courseId, jwt.getClaimAsString("sub")));
+    }
+    @GetMapping("/get-all-attendance-of-student-of-course")
+    public ResponseEntity<List<?>> getAllAttendanceOfStudentOfCourse(@RequestParam Long courseId, @RequestParam Long studentId, @AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(teacherService.getAllAttendanceOfStudentOfCourse(courseId, studentId, jwt.getClaimAsString("sub")));
     }
 }

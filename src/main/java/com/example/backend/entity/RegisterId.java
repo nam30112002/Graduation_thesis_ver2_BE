@@ -24,4 +24,7 @@ public class RegisterId implements Serializable {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    public Long getCourseId() {
+        return course.getId();
+    }
 }

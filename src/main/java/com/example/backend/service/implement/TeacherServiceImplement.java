@@ -1,9 +1,6 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.dto.AttendanceLogDto;
-import com.example.backend.dto.CourseDto;
-import com.example.backend.dto.QuestionDto;
-import com.example.backend.dto.TeacherDto;
+import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.exception.CustomException;
 import com.example.backend.repository.*;
@@ -169,6 +166,7 @@ public class TeacherServiceImplement implements TeacherService {
         attendanceLog.setCourse(course.get());
         attendanceLog.setAttendanceTime(attendanceLogDto.getAttendanceTime());
         attendanceLog.setIsAttendance(attendanceLogDto.getIsAttendance());
+        attendanceLog.setLectureNumber(attendanceLogDto.getLectureNumber());
         attendanceLogRepository.save(attendanceLog);
     }
 
@@ -188,6 +186,7 @@ public class TeacherServiceImplement implements TeacherService {
             courseWithoutTeacher.setCreatedAt(course.getCreatedAt());
             courseWithoutTeacher.setUpdatedAt(course.getUpdatedAt());
             courseWithoutTeacher.setIsActive(course.getIsActive());
+            courseWithoutTeacher.setDescription(course.getDescription());
             response.add(courseWithoutTeacher);
         }
         return response;
@@ -220,6 +219,11 @@ public class TeacherServiceImplement implements TeacherService {
             throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
         }
         registerRepository.deleteById(registerId);
+        //delete all attendance of student in this course
+        List<AttendanceLog> attendanceLogs = attendanceLogRepository.findByStudentAndCourse(student.get(), course.get());
+        for(AttendanceLog attendanceLog: attendanceLogs){
+            attendanceLogRepository.deleteById(attendanceLog.getId());
+        }
     }
 
     @Override
@@ -301,11 +305,11 @@ public class TeacherServiceImplement implements TeacherService {
         if(!question.get().getCourse().getTeacher().equals(teacher.get())){
             throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
         }
-        questionRepository.deleteById(questionId);
         List<Answer> answers = answerRepository.findByQuestion(question.get());
         for(Answer answer: answers){
             answerRepository.deleteById(answer.getId());
         }
+        questionRepository.deleteById(questionId);
     }
 
     @Override
@@ -384,6 +388,83 @@ public class TeacherServiceImplement implements TeacherService {
             answerWithoutQuestion.setCreatedAt(answer.getCreatedAt());
             answerWithoutQuestion.setUpdatedAt(answer.getUpdatedAt());
             response.add(answerWithoutQuestion);
+        }
+        return response;
+    }
+
+    @Override
+    public void updateQuestion(Long questionId, String content, String teacherKeycloakId) {
+        Optional<Question> question = questionRepository.findById(questionId);
+        if(question.isEmpty()){
+            throw new CustomException("Question not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!question.get().getCourse().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        question.get().setContent(content);
+    }
+
+    @Override
+    public List<StudentInCourseDto> getAllStudentOfCourse(Long courseId, String teacherKeycloakId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        List<Register> registers = registerRepository.findByIdCourse(course.get());
+        List<StudentInCourseDto> response = new ArrayList<>();
+        for(Register register: registers){
+            StudentInCourseDto studentInCourseDto = new StudentInCourseDto();
+            studentInCourseDto.setId(register.getId().getStudent().getId());
+            studentInCourseDto.setStudentCode(register.getId().getStudent().getStudentCode());
+            studentInCourseDto.setName(register.getId().getStudent().getName());
+            studentInCourseDto.setCourseCode(register.getId().getCourse().getCourseCode());
+            studentInCourseDto.setNumberOfAbsent(register.getNumberOfAbsence());
+            studentInCourseDto.setNumberOfPresent(register.getNumberOfAttendance());
+            response.add(studentInCourseDto);
+        }
+        return response;
+    }
+
+    @Override
+    public List<?> getAllAttendanceOfStudentOfCourse(Long courseId, Long studentId, String teacherKeycloakId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        Optional<Student> student = studentRepository.findById(studentId);
+        if(student.isEmpty()){
+            throw new CustomException("Student not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        List<AttendanceLog> attendanceLogs = attendanceLogRepository.findByStudentAndCourse(student.get(), course.get());
+        List<AttendanceLog> response = new ArrayList<>();
+        for(AttendanceLog attendanceLog: attendanceLogs){
+            AttendanceLog attendanceLogWithoutStudentAndCourse = new AttendanceLog();
+            attendanceLogWithoutStudentAndCourse.setId(attendanceLog.getId());
+            attendanceLogWithoutStudentAndCourse.setAttendanceTime(attendanceLog.getAttendanceTime());
+            attendanceLogWithoutStudentAndCourse.setIsAttendance(attendanceLog.getIsAttendance());
+            attendanceLogWithoutStudentAndCourse.setLectureNumber(attendanceLog.getLectureNumber());
+            response.add(attendanceLogWithoutStudentAndCourse);
         }
         return response;
     }

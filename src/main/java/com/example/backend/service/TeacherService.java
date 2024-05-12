@@ -1,9 +1,6 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.AttendanceLogDto;
-import com.example.backend.dto.CourseDto;
-import com.example.backend.dto.QuestionDto;
-import com.example.backend.dto.TeacherDto;
+import com.example.backend.dto.*;
 import com.example.backend.entity.Course;
 import com.example.backend.entity.Teacher;
 import org.springframework.data.domain.Page;
@@ -39,4 +36,10 @@ public interface TeacherService {
     List<?> getAllQuestionOfCourse(Long courseId);
 
     List<?> getAllAnswerOfQuestion(Long questionId);
+
+    void updateQuestion(Long questionId, String content, String teacherKeycloakId);
+
+    List<StudentInCourseDto> getAllStudentOfCourse(Long courseId, String teacherKeycloakId);
+
+    List<?> getAllAttendanceOfStudentOfCourse(Long courseId, Long studentId, String teacherKeycloakId);
 }
