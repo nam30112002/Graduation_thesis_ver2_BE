@@ -42,4 +42,8 @@ public interface TeacherService {
     List<StudentInCourseDto> getAllStudentOfCourse(Long courseId, String teacherKeycloakId);
 
     List<?> getAllAttendanceOfStudentOfCourse(Long courseId, Long studentId, String teacherKeycloakId);
+
+    void updateCourse(Long courseId, CourseDto courseDto, String sub);
+
+    void deleteCourse(Long courseId, String sub);
 }

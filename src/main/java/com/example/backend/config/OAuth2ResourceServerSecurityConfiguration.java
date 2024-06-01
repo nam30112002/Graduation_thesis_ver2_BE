@@ -26,6 +26,7 @@ public class OAuth2ResourceServerSecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/api/public/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 //.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)

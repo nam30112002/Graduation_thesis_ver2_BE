@@ -1,8 +1,23 @@
 {
   "realm": "nam30112002",
-  "auth-server-url": "http://localhost:9000",
+  "auth-server-url": "http://192.168.1.7:9000",
   "resource": "graduation_thesis_ver2",
   "credentials": {
     "secret": "Tj5zNU17UX9Ak1d4lLulx9VcXSSdHJwC"
-  }
+  },
+  "paths": [
+    {
+      "path": "/api/teacher/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/api/public/swagger-ui.html",
+      "enforcement-mode": "DISABLED"
+    }
+  ]
 }
+

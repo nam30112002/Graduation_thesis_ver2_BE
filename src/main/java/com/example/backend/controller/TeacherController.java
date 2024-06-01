@@ -91,4 +91,14 @@ public class TeacherController {
     public ResponseEntity<List<?>> getAllAttendanceOfStudentOfCourse(@RequestParam Long courseId, @RequestParam Long studentId, @AuthenticationPrincipal Jwt jwt){
         return ResponseEntity.ok(teacherService.getAllAttendanceOfStudentOfCourse(courseId, studentId, jwt.getClaimAsString("sub")));
     }
+    @PutMapping("/update-course")
+    public ResponseEntity<?> updateCourse(@RequestParam Long courseId, @RequestBody CourseDto courseDto, @AuthenticationPrincipal Jwt jwt){
+        teacherService.updateCourse(courseId, courseDto, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Course updated successfully");
+    }
+    @DeleteMapping("/delete-course")
+    public ResponseEntity<?> deleteCourse(@RequestParam Long courseId, @AuthenticationPrincipal Jwt jwt){
+        teacherService.deleteCourse(courseId, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Course deleted successfully");
+    }
 }

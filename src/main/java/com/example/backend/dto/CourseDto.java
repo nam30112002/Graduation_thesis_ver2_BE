@@ -12,4 +12,5 @@ import lombok.Setter;
 public class CourseDto {
     private String courseCode;
     private String subject;
+    private String description;
 }

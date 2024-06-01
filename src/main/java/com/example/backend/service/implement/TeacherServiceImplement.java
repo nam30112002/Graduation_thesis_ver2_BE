@@ -105,6 +105,7 @@ public class TeacherServiceImplement implements TeacherService {
         course.setTeacher(teacher.get());
         course.setCreatedAt(OffsetDateTime.now());
         course.setUpdatedAt(OffsetDateTime.now());
+        course.setDescription(courseDto.getDescription());
         course.setIsActive(true);
         courseRepository.save(course);
     }
@@ -467,5 +468,47 @@ public class TeacherServiceImplement implements TeacherService {
             response.add(attendanceLogWithoutStudentAndCourse);
         }
         return response;
+    }
+
+    @Override
+    public void updateCourse(Long courseId, CourseDto courseDto, String sub) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(sub);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        if(courseDto.getCourseCode() != null){
+            course.get().setCourseCode(courseDto.getCourseCode());
+        }
+        if(courseDto.getSubject() != null){
+            course.get().setSubject(courseDto.getSubject());
+        }
+        course.get().setDescription(courseDto.getDescription());
+        course.get().setUpdatedAt(OffsetDateTime.now());
+        courseRepository.save(course.get());
+    }
+
+    @Override
+    public void deleteCourse(Long courseId, String sub) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(sub);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        courseRepository.deleteById(courseId);
     }
 }
