@@ -6,18 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.OffsetDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "question")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Question {
+@Table(name = "form")
+public class Form {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -25,19 +24,16 @@ public class Question {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "form_id", nullable = false)
-    private Form form;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
-    @NotNull
-    @Column(name = "content", nullable = false)
-    private String content;
+    @Column(name = "code", length = Integer.MAX_VALUE)
+    private String code;
 
-    @CreationTimestamp
+    @Column(name = "expired_at")
+    private OffsetDateTime expiredAt;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private OffsetDateTime updatedAt;
 
 }

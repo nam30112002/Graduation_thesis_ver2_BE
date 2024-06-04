@@ -101,4 +101,9 @@ public class TeacherController {
         teacherService.deleteCourse(courseId, jwt.getClaimAsString("sub"));
         return ResponseEntity.ok("Course deleted successfully");
     }
+    @GetMapping("/search-student")
+    public ResponseEntity<List<?>> searchStudent(@RequestParam String name){
+        return ResponseEntity.ok(teacherService.searchStudent(name));
+    }
+
 }

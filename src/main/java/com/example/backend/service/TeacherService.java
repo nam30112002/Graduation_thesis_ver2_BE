@@ -46,4 +46,6 @@ public interface TeacherService {
     void updateCourse(Long courseId, CourseDto courseDto, String sub);
 
     void deleteCourse(Long courseId, String sub);
+
+    List<?> searchStudent(String name);
 }

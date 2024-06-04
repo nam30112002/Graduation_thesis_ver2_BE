@@ -162,6 +162,15 @@ public class TeacherServiceImplement implements TeacherService {
         if(registerOptional.isEmpty()){
             throw new CustomException("Student is not registered to this course", HttpStatus.BAD_REQUEST);
         }
+        //check if lecture number is exist then update attendance instead of create new attendance
+        List<AttendanceLog> attendanceLogs = attendanceLogRepository.findByStudentAndCourseAndLectureNumber(student.get(), course.get(), attendanceLogDto.getLectureNumber());
+        if(!attendanceLogs.isEmpty()){
+            AttendanceLog attendanceLog = attendanceLogs.getFirst();
+            attendanceLog.setIsAttendance(attendanceLogDto.getIsAttendance());
+            attendanceLog.setAttendanceTime(attendanceLogDto.getAttendanceTime());
+            attendanceLogRepository.save(attendanceLog);
+            return;
+        }
         AttendanceLog attendanceLog = new AttendanceLog();
         attendanceLog.setStudent(student.get());
         attendanceLog.setCourse(course.get());
@@ -246,50 +255,7 @@ public class TeacherServiceImplement implements TeacherService {
 
     @Override
     public void createQuestion(Long courseId, QuestionDto questionDto, String teacherKeycloakId) {
-        Optional<Course> course = courseRepository.findById(courseId);
-        if(course.isEmpty()){
-            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
-        }
-        //check if course is mine
-        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
-        if(teacher.isEmpty()){
-            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
-        }
-        if(!course.get().getTeacher().equals(teacher.get())){
-            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
-        }
-        Question question = new Question();
-        question.setCourse(course.get());
-        question.setContent(questionDto.getQuestion());
-        questionRepository.save(question);
-        for(String correctAnswer: questionDto.getCorrectAnswers()){
-            Answer answer = new Answer();
-            answer.setQuestion(question);
-            answer.setIsTrue(true);
-            //if answer starts with "@image " then it is image answer
-            if(correctAnswer.startsWith("@image ")){
-                answer.setContent(correctAnswer.substring(7));
-                answer.setIsImage(true);
-            }else{
-                answer.setContent(correctAnswer);
-                answer.setIsImage(false);
-            }
-            answerRepository.save(answer);
-        }
-        for(String wrongAnswer: questionDto.getWrongAnswers()){
-            Answer answer = new Answer();
-            answer.setQuestion(question);
-            answer.setIsTrue(false);
-            //if answer starts with "@image " then it is image answer
-            if(wrongAnswer.startsWith("@image ")){
-                answer.setContent(wrongAnswer.substring(7));
-                answer.setIsImage(true);
-            }else{
-                answer.setContent(wrongAnswer);
-                answer.setIsImage(false);
-            }
-            answerRepository.save(answer);
-        }
+
     }
 
     @Override
@@ -332,25 +298,7 @@ public class TeacherServiceImplement implements TeacherService {
 
     @Override
     public void updateAnswer(Long answerId, String content, String teacherKeycloakId) {
-        Optional<Answer> answer = answerRepository.findById(answerId);
-        if(answer.isEmpty()){
-            throw new CustomException("Answer not found", HttpStatus.NOT_FOUND);
-        }
-        //check if course is mine
-        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
-        if(teacher.isEmpty()){
-            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
-        }
-        if(!answer.get().getQuestion().getCourse().getTeacher().equals(teacher.get())){
-            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
-        }
-        if(content.startsWith("@image ")){
-            answer.get().setIsImage(true);
-            answer.get().setContent(content.substring(7));
-        }else{
-            answer.get().setIsImage(false);
-            answer.get().setContent(content);
-        }
+
     }
 
     @Override
@@ -374,23 +322,7 @@ public class TeacherServiceImplement implements TeacherService {
 
     @Override
     public List<?> getAllAnswerOfQuestion(Long questionId) {
-        Optional<Question> question = questionRepository.findById(questionId);
-        if(question.isEmpty()){
-            throw new CustomException("Question not found", HttpStatus.NOT_FOUND);
-        }
-        List<Answer> answers = answerRepository.findByQuestion(question.get());
-        List<Answer> response = new ArrayList<>();
-        for(Answer answer: answers){
-            Answer answerWithoutQuestion = new Answer();
-            answerWithoutQuestion.setId(answer.getId());
-            answerWithoutQuestion.setContent(answer.getContent());
-            answerWithoutQuestion.setIsImage(answer.getIsImage());
-            answerWithoutQuestion.setIsTrue(answer.getIsTrue());
-            answerWithoutQuestion.setCreatedAt(answer.getCreatedAt());
-            answerWithoutQuestion.setUpdatedAt(answer.getUpdatedAt());
-            response.add(answerWithoutQuestion);
-        }
-        return response;
+        return List.of();
     }
 
     @Override
@@ -510,5 +442,15 @@ public class TeacherServiceImplement implements TeacherService {
             throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
         }
         courseRepository.deleteById(courseId);
+    }
+
+    @Override
+    public List<?> searchStudent(String name) {
+        List<Student> students = studentRepository.findByNameContaining(name);
+        //get top 5
+        if(students.size() > 5){
+            students = students.subList(0, 5);
+        }
+        return students;
     }
 }
