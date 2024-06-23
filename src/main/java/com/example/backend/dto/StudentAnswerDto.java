@@ -11,8 +11,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionDto {
-    private Long id;
-    private String content;
+public class StudentAnswerDto {
+    private String code;
     private List<AnswerDto> answers;
+    private Double latitude;
+    private Double longitude;
 }

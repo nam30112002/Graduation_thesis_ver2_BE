@@ -14,4 +14,5 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByTeacherKeycloakId(String teacherKeycloakId);
     @Query("select c from Course c where c.teacher = ?1")
     List<Course> findByTeacher(Teacher teacher);
+
 }

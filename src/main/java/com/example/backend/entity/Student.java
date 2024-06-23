@@ -45,4 +45,7 @@ public class Student {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @Column(name = "image_path")
+    private String imagePath;
+
 }

@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.AttendanceLogDto;
 import com.example.backend.dto.CourseDto;
+import com.example.backend.dto.FormDto;
 import com.example.backend.dto.QuestionDto;
 import com.example.backend.service.TeacherService;
 import org.springframework.http.ResponseEntity;
@@ -105,5 +106,25 @@ public class TeacherController {
     public ResponseEntity<List<?>> searchStudent(@RequestParam String name){
         return ResponseEntity.ok(teacherService.searchStudent(name));
     }
-
+    @PostMapping("/create-form")
+    public ResponseEntity<?> createForm(@RequestParam Long courseId, @RequestBody FormDto formDto, @AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(teacherService.createForm(courseId, formDto, jwt.getClaimAsString("sub")));
+    }
+    @GetMapping("/get-form-by-course")
+    public ResponseEntity<?> getFormByCourse(@RequestParam Long courseId, @AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(teacherService.getFormByCourse(courseId));
+    }
+    @DeleteMapping("/delete-form-by-course")
+    public ResponseEntity<?> deleteForm(@RequestParam Long courseId, @AuthenticationPrincipal Jwt jwt){
+        teacherService.deleteForm(courseId, jwt.getClaimAsString("sub"));
+        return ResponseEntity.ok("Form deleted successfully");
+    }
+    @GetMapping("/get-my-class-chart")
+    public ResponseEntity<List<?>> getMyClassChart(@AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(teacherService.getMyClassChart(jwt.getClaimAsString("sub")));
+    }
+    @GetMapping("/get-rate-of-my-class-chart")
+    public ResponseEntity<List<?>> getRateOfMyClassChart(@AuthenticationPrincipal Jwt jwt){
+        return ResponseEntity.ok(teacherService.getRateOfMyClassChart(jwt.getClaimAsString("sub")));
+    }
 }

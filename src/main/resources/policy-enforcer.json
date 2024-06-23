@@ -11,11 +11,19 @@
       "enforcement-mode": "DISABLED"
     },
     {
+      "path": "/api/student/*",
+      "enforcement-mode": "DISABLED"
+    },
+    {
       "path": "/*",
       "enforcement-mode": "DISABLED"
     },
     {
       "path": "/api/public/swagger-ui.html",
+      "enforcement-mode": "DISABLED"
+    },
+    {
+      "path": "/api/anonymous/*",
       "enforcement-mode": "DISABLED"
     }
   ]

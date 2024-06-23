@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.*;
 import com.example.backend.entity.Course;
+import com.example.backend.entity.Form;
 import com.example.backend.entity.Teacher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -48,4 +49,14 @@ public interface TeacherService {
     void deleteCourse(Long courseId, String sub);
 
     List<?> searchStudent(String name);
+
+    String createForm(Long courseId, FormDto formDto, String sub);
+
+    FormDto getFormByCourse(Long courseId);
+
+    void deleteForm(Long courseId, String sub);
+
+    List<BarChartDto> getMyClassChart(String sub);
+
+    List<?> getRateOfMyClassChart(String sub);
 }

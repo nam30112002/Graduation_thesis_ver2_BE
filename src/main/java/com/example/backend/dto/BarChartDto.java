@@ -11,8 +11,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionDto {
-    private Long id;
-    private String content;
-    private List<AnswerDto> answers;
+public class BarChartDto {
+    private String label;
+    private Double value;
 }
+

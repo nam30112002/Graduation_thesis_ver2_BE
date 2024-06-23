@@ -5,6 +5,7 @@ import com.example.backend.entity.*;
 import com.example.backend.exception.CustomException;
 import com.example.backend.repository.*;
 import com.example.backend.service.TeacherService;
+import com.example.backend.service.Utility;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,11 @@ public class TeacherServiceImplement implements TeacherService {
     private final AttendanceLogRepository attendanceLogRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
-    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository, StudentRepository studentRepository, RegisterRepository registerRepository, AttendanceLogRepository attendanceLogRepository, QuestionRepository questionRepository, AnswerRepository answerRepository) {
+    private final FormRepository formRepository;
+
+
+
+    public TeacherServiceImplement(TeacherRepository teacherRepository, CourseRepository courseRepository, StudentRepository studentRepository, RegisterRepository registerRepository, AttendanceLogRepository attendanceLogRepository, QuestionRepository questionRepository, AnswerRepository answerRepository, FormRepository formRepository) {
         this.teacherRepository = teacherRepository;
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
@@ -32,6 +37,7 @@ public class TeacherServiceImplement implements TeacherService {
         this.attendanceLogRepository = attendanceLogRepository;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
+        this.formRepository = formRepository;
     }
     @Override
     public Teacher createTeacher(TeacherDto teacherDto) {
@@ -178,6 +184,8 @@ public class TeacherServiceImplement implements TeacherService {
         attendanceLog.setIsAttendance(attendanceLogDto.getIsAttendance());
         attendanceLog.setLectureNumber(attendanceLogDto.getLectureNumber());
         attendanceLogRepository.save(attendanceLog);
+        //update number of attendance and number of absence by call procedure
+        teacherRepository.updateAttendanceCount(course.get().getId(), student.get().getId());
     }
 
     @Override
@@ -260,40 +268,12 @@ public class TeacherServiceImplement implements TeacherService {
 
     @Override
     public void deleteQuestion(Long questionId, String teacherKeycloakId) {
-        Optional<Question> question = questionRepository.findById(questionId);
-        if(question.isEmpty()){
-            throw new CustomException("Question not found", HttpStatus.NOT_FOUND);
-        }
-        //check if course is mine
-        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
-        if(teacher.isEmpty()){
-            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
-        }
-        if(!question.get().getCourse().getTeacher().equals(teacher.get())){
-            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
-        }
-        List<Answer> answers = answerRepository.findByQuestion(question.get());
-        for(Answer answer: answers){
-            answerRepository.deleteById(answer.getId());
-        }
-        questionRepository.deleteById(questionId);
+
     }
 
     @Override
     public void deleteAnswer(Long answerId, String teacherKeycloakId) {
-        Optional<Answer> answer = answerRepository.findById(answerId);
-        if(answer.isEmpty()){
-            throw new CustomException("Answer not found", HttpStatus.NOT_FOUND);
-        }
-        //check if course is mine
-        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
-        if(teacher.isEmpty()){
-            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
-        }
-        if(!answer.get().getQuestion().getCourse().getTeacher().equals(teacher.get())){
-            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
-        }
-        answerRepository.deleteById(answerId);
+
     }
 
     @Override
@@ -303,21 +283,7 @@ public class TeacherServiceImplement implements TeacherService {
 
     @Override
     public List<?> getAllQuestionOfCourse(Long courseId) {
-        Optional<Course> course = courseRepository.findById(courseId);
-        if(course.isEmpty()){
-            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
-        }
-        List<Question> questions = questionRepository.findByCourse(course.get());
-        List<Question> response = new ArrayList<>();
-        for(Question question: questions){
-            Question questionWithoutCourse = new Question();
-            questionWithoutCourse.setId(question.getId());
-            questionWithoutCourse.setContent(question.getContent());
-            questionWithoutCourse.setCreatedAt(question.getCreatedAt());
-            questionWithoutCourse.setUpdatedAt(question.getUpdatedAt());
-            response.add(questionWithoutCourse);
-        }
-        return response;
+        return List.of();
     }
 
     @Override
@@ -327,19 +293,7 @@ public class TeacherServiceImplement implements TeacherService {
 
     @Override
     public void updateQuestion(Long questionId, String content, String teacherKeycloakId) {
-        Optional<Question> question = questionRepository.findById(questionId);
-        if(question.isEmpty()){
-            throw new CustomException("Question not found", HttpStatus.NOT_FOUND);
-        }
-        //check if course is mine
-        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(teacherKeycloakId);
-        if(teacher.isEmpty()){
-            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
-        }
-        if(!question.get().getCourse().getTeacher().equals(teacher.get())){
-            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
-        }
-        question.get().setContent(content);
+
     }
 
     @Override
@@ -452,5 +406,161 @@ public class TeacherServiceImplement implements TeacherService {
             students = students.subList(0, 5);
         }
         return students;
+    }
+
+    @Override
+    public String createForm(Long courseId, FormDto formDto, String sub) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(sub);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        //check if course has form
+        Optional<Form> formOptional = formRepository.findFirstByCourse(course.get());
+        formOptional.ifPresent(form -> formRepository.deleteById(form.getId()));
+        Form form = new Form();
+        form.setLectureNumber(formDto.getLectureNumber());
+        //set expiredAt = now + timeOfPeriod (unit: second)
+        form.setExpiredAt(OffsetDateTime.now().plusSeconds(formDto.getTimeOfPeriod()));
+        String uniqueCode;
+        do{
+            uniqueCode = Utility.generateRandomString(8);
+        }while (formRepository.findByCode(uniqueCode).isPresent());
+        form.setCode(uniqueCode);
+        form.setCourse(course.get());
+        form.setLatitude(formDto.getLatitude());
+        form.setLongitude(formDto.getLongitude());
+        formRepository.save(form);
+        for(QuestionDto questionDto: formDto.getQuestions()){
+            Question question = new Question();
+            question.setContent(questionDto.getContent());
+            question.setForm(form);
+            questionRepository.save(question);
+            for(AnswerDto answerDto: questionDto.getAnswers()){
+                Answer answer = new Answer();
+                answer.setContent(answerDto.getContent());
+                answer.setIsTrue(answerDto.getIsTrue());
+                answer.setQuestion(question);
+                answerRepository.save(answer);
+            }
+        }
+        return form.getCode();
+    }
+
+    @Override
+    public FormDto getFormByCourse(Long courseId) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        Optional<Form> form = formRepository.findFirstByCourse(course.get());
+        if(form.isEmpty()){
+            throw new CustomException("Form not found", HttpStatus.NOT_FOUND);
+        }
+
+
+        //check if expired
+        if(form.get().getExpiredAt().isBefore(OffsetDateTime.now())){
+            formRepository.deleteById(form.get().getId());
+            throw new CustomException("Form is expired and will be deleted", HttpStatus.BAD_REQUEST);
+        }
+        FormDto formDto = new FormDto();
+        formDto.setCode(form.get().getCode());
+        formDto.setLectureNumber(form.get().getLectureNumber());
+        formDto.setTimeOfPeriod(form.get().getExpiredAt().toEpochSecond() - OffsetDateTime.now().toEpochSecond());
+
+        List<QuestionDto> questionDtos = new ArrayList<>();
+        List<Question> questions = questionRepository.findByForm(form.get());
+        for(Question question: questions){
+            QuestionDto questionDto = new QuestionDto();
+            questionDto.setContent(question.getContent());
+            List<AnswerDto> answerDtos = new ArrayList<>();
+            List<Answer> answers = answerRepository.findByQuestion(question);
+            for(Answer answer: answers){
+                AnswerDto answerDto = new AnswerDto();
+                answerDto.setContent(answer.getContent());
+                answerDto.setIsTrue(answer.getIsTrue());
+                answerDtos.add(answerDto);
+            }
+            questionDto.setAnswers(answerDtos);
+            questionDtos.add(questionDto);
+        }
+        formDto.setQuestions(questionDtos);
+        return formDto;
+    }
+
+    @Override
+    public void deleteForm(Long courseId, String sub) {
+        Optional<Course> course = courseRepository.findById(courseId);
+        if(course.isEmpty()){
+            throw new CustomException("Course not found", HttpStatus.NOT_FOUND);
+        }
+        //check if course is mine
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(sub);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        if(!course.get().getTeacher().equals(teacher.get())){
+            throw new CustomException("Course is not yours", HttpStatus.BAD_REQUEST);
+        }
+        Optional<Form> form = formRepository.findFirstByCourse(course.get());
+        if(form.isEmpty()){
+            throw new CustomException("Form not found", HttpStatus.NOT_FOUND);
+        }
+        formRepository.deleteById(form.get().getId());
+    }
+
+    @Override
+    public List<BarChartDto> getMyClassChart(String sub) {
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(sub);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        List<Course> courses = courseRepository.findByTeacher(teacher.get());
+        List<BarChartDto> response = new ArrayList<>();
+        for(Course course: courses){
+            BarChartDto barChartDto = new BarChartDto();
+            barChartDto.setLabel(course.getCourseCode());
+            barChartDto.setValue(registerRepository.countAllByIdCourse(course));
+            response.add(barChartDto);
+        }
+        return response;
+    }
+
+    @Override
+    public List<?> getRateOfMyClassChart(String sub) {
+        Optional<Teacher> teacher = teacherRepository.findByKeycloakId(sub);
+        if(teacher.isEmpty()){
+            throw new CustomException("Teacher not found", HttpStatus.NOT_FOUND);
+        }
+        //get rate of attendance of each course
+        List<Course> courses = courseRepository.findByTeacher(teacher.get());
+        List<BarChartDto> response = new ArrayList<>();
+        for(Course course: courses){
+            BarChartDto barChartDto = new BarChartDto();
+            barChartDto.setLabel(course.getCourseCode());
+            List<Register> registers = registerRepository.findByIdCourse(course);
+            //calculate rate of attendance = sum of attendance / sum of attendance + sum of absence
+            double sumOfAttendance = 0;
+            double sumOfAbsence = 0;
+            for(Register register: registers){
+                sumOfAttendance += register.getNumberOfAttendance();
+                sumOfAbsence += register.getNumberOfAbsence();
+            }
+            if(sumOfAttendance + sumOfAbsence == 0){
+                //skip if no student in course
+                continue;
+            }
+            barChartDto.setValue(sumOfAttendance / (sumOfAttendance + sumOfAbsence));
+            response.add(barChartDto);
+        }
+        return response;
     }
 }
