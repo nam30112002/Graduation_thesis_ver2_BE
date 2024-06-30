@@ -31,5 +31,5 @@ Hello, welcome to my graduation_thesis_ver2_BE
 
 ## Hướng Dẫn Sử Dụng
 
-Bạn có thể sử dụng phần backend này bằng cách gọi API (sử dụng Postman để thử, import file [graduation_thesis_ver2.postman_collection.json](graduation_thesis_ver2.postman_collection.json) vào Postman).
+Bạn có thể sử dụng phần backend này bằng cách gọi API (sử dụng Postman để thử, import file [graduation_thesis_ver2.postman_collection.json](./src/main/resources/graduation_thesis_ver2.postman_collection.json) vào Postman).
 
