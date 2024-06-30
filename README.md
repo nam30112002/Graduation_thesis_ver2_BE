@@ -24,7 +24,7 @@ Hello, welcome to my graduation_thesis_ver2_BE
     ```
 2. **Thiết lập DB**: vào file [application.properties](src/main/resources/application.properties) để thiết lập đường dẫn đến DB của bạn
 
-3. **Cài đặt Keycloak**: tải Keycloak version 24.0.1, sau đó chọn tạo realm mới, import file [graduation_thesis_ver2.postman_collection.json](./src/main/resources/graduation_thesis_ver2.postman_collection.json) vào.
+3. **Cài đặt Keycloak**: tải Keycloak version 24.0.1, sau đó chọn tạo realm mới, import file [realm-export.json](src/main/resources/realm-export.json) vào.
 
 4. **Chạy chương trình**:
     ```bash
