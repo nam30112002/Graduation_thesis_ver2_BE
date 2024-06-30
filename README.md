@@ -1,7 +1,7 @@
 Hello, welcome to my graduation_thesis_ver2_BE
 # Detect Face
 
-![License](https://img.shields.io/github/license/nam30112002/detect-face) ![Issues](https://img.shields.io/github/issues/nam30112002/detect-face) ![Stars](https://img.shields.io/github/stars/nam30112002/detect-face) ![Forks](https://img.shields.io/github/forks/nam30112002/detect-face)
+![License](https://img.shields.io/github/license/nam30112002/Graduation_thesis_ver2_BE) ![Issues](https://img.shields.io/github/issues/nam30112002/Graduation_thesis_ver2_BE) ![Stars](https://img.shields.io/github/stars/nam30112002/Graduation_thesis_ver2_BE) ![Forks](https://img.shields.io/github/forks/nam30112002/Graduation_thesis_ver2_BE)
 
 Detect Face là một dự án mã nguồn mở tập trung vào việc nhận diện và định danh khuôn mặt sử dụng các mô hình học sâu. Dự án này cung cấp một công cụ mạnh mẽ để phát hiện khuôn mặt trong hình ảnh và video, hỗ trợ nhiều ứng dụng trong lĩnh vực an ninh, y tế, và nhiều lĩnh vực khác.
 
