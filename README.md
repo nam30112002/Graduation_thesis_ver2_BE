@@ -1,1 +1,35 @@
 Hello, welcome to my graduation_thesis_ver2_BE
+
+![License](https://img.shields.io/github/license/nam30112002/Graduation_thesis_ver2_BE) ![Issues](https://img.shields.io/github/issues/nam30112002/Graduation_thesis_ver2_BE) ![Stars](https://img.shields.io/github/stars/nam30112002/Graduation_thesis_ver2_BE) ![Forks](https://img.shields.io/github/forks/nam30112002/Graduation_thesis_ver2_BE)
+
+
+## Tính Năng
+
+- **Quản lí lớp học**: CRUD lớp học.
+- **Quản lí người học**: CRUD người học.
+- **Quản lí điểm danh**: CRUD bản ghi điểm danh, có thể tạo và trả lời form điểm danh.
+- **API thân thiện**: Cung cấp API dễ sử dụng để tích hợp vào các ứng dụng khác.
+- **Mở rộng dễ dàng**: Dễ dàng mở rộng và tùy chỉnh cho các nhu cầu cụ thể của bạn.
+
+## Yêu Cầu Hệ Thống
+
+- Java 21 hoặc mới hơn
+
+## Cài Đặt
+
+1. **Clone repo**:
+    ```bash
+    git clone https://github.com/nam30112002/Graduation_thesis_ver2_BE.git
+    cd Graduation_thesis_ver2_BE
+    ```
+
+2. **Chạy chương trình**:
+    ```bash
+    cd /path/to/your/spring-boot-project
+    mvn spring-boot:run
+    ```
+
+## Hướng Dẫn Sử Dụng
+
+Bạn có thể sử dụng phần backend này bằng cách gọi API (sử dụng Postman để thử, import file [graduation_thesis_ver2.postman_collection.json](./src/main/resources/graduation_thesis_ver2.postman_collection.json) vào Postman).
+
