@@ -1,5 +1,4 @@
 Hello, welcome to my graduation_thesis_ver2_BE
-# Detect Face
 
 ![License](https://img.shields.io/github/license/nam30112002/Graduation_thesis_ver2_BE) ![Issues](https://img.shields.io/github/issues/nam30112002/Graduation_thesis_ver2_BE) ![Stars](https://img.shields.io/github/stars/nam30112002/Graduation_thesis_ver2_BE) ![Forks](https://img.shields.io/github/forks/nam30112002/Graduation_thesis_ver2_BE)
 
